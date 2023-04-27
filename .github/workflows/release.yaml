@@ -27,6 +27,7 @@ jobs:
 
       - name: Build and push
         run: |
+          ROOT=$(git rev-parse --show-toplevel)
           build_tag="${{ github.ref_name }}"
-          KO_DOCKER_REPO=ghcr.io/ozansz/otelapp ko build --platform all --tags "latest,$build_tag" -B cmd/otelapp
+          KO_DOCKER_REPO=ghcr.io/ozansz/otelapp ko build --platform all --tags "latest,$build_tag" -B $ROOT/cmd/otelapp
 
