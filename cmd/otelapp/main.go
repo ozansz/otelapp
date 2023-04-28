@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"log"
-	"math/rand"
 	"os"
-	"time"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -32,21 +31,26 @@ func main() {
 	r := gin.Default()
 	r.Use(otelgin.Middleware(serviceName))
 
-	for i := 0; i < 5; i++ {
-		go func() {
-			for {
-				_ = fibonacci(15)
-				time.Sleep(time.Duration(1000+rand.Intn(4000)) * time.Millisecond)
-			}
-		}()
-	}
+	r.GET("/fib/:n", func(c *gin.Context) {
+		n := c.Param("n")
+		nInt, err := strconv.Atoi(n)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": "invalid input",
+			})
+			return
+		}
+		c.JSON(200, gin.H{
+			"result": fibonacci(nInt),
+		})
+	})
 
-	<-make(chan struct{})
+	if err := r.Run(":8080"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func fibonacci(n int) int {
-	log.Printf("Calculating fibonacci(%d)", n)
-
 	if n < 2 {
 		return n
 	}
